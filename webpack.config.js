@@ -5,7 +5,7 @@ module.exports = function(env={}) {
 
     return {
         mode: dev ? 'development' : 'production', //生产模式
-        entry: './src/index.js', //入口文件
+        entry:['@babel/polyfill','./src/index.js'] , //入口文件  babel/polyfill 是为了兼容es6+以上的语法的
         output: {
            path : path.resolve(__dirname,'dist'),
            filename: dev ? 'axios.js' : 'axios.min.js',

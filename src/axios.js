@@ -1,9 +1,17 @@
 import _default from './default'
 import {merge, assert, clone} from './common'
-import {request} from './request'
+import request from './request'
+import createResponse from './response'
+import createError from './error'
 const url = require('url')
+import Interceptor from './interceptor'
+
 class Axios{
     constructor() {
+        this.interceptors = {
+            request: new Interceptor(),
+            response: new Interceptor(),
+        }
         let _this = this
         return new Proxy(request,{
             get(data,name) {
@@ -47,19 +55,25 @@ class Axios{
 
     // 1.跟this.default进行合并
          // merge(options,this.default) 单纯合并相关代码 headers里面的数据会出现错误  无法实现相关代码的属性的覆盖会保存原有的数据
-        let result = clone(this.default)
+        
         let _headers = this.default.headers
         delete this.default.headers
+
+        let result = clone(this.default)
         merge(result,this.default)
         merge(result,options)
         this.default.headers = _headers
+        options = result
         //合并头
         // this.default.headers.common -> this.default.headers.get -> options
         let headers = {}
         merge(headers,this.default.headers.common)
-        merge(headers,this.default.headers[options.method.toLowerCase()])
+        if (options.method) {
+            merge(headers,this.default.headers[options.method.toLowerCase()])
+        }
         merge(headers,options.headers)
         options.headers = headers
+
     // 2.检测参数是否正确
         assert(options.method,'no method')
         assert(typeof options.method == 'string','method must be string')
@@ -70,8 +84,38 @@ class Axios{
         // options.url = options.baseUrl + options.url
         options.url = url.resolve(options.baseUrl,options.url)
         delete options.baseUrl
-    // 4.正式调用request(options)
-        request(options)
+
+
+    // 4.变换一下请求
+    const { transformRequest,transformResponse } = options
+    delete options.transformRequest
+    delete options.transformResponse
+    if (transformRequest) {
+        options = transformRequest(options)
+    }
+    let list = this.interceptors.request.list()
+    list.forEach(fn => {
+        options = fn(options)
+    }) 
+    // 4-5.正式调用request(options)
+        // return request(options)
+        return new Promise((resolve,reject)=>{
+            return request(options).then(
+                xhr => {
+                   let res = createResponse(xhr)
+                   if (transformResponse) res = transformResponse(res)
+                   let  list = this.interceptors.response.list()
+                   list.forEach(fn => {
+                       res = fn(res)
+                   })
+                   resolve(res)
+                },
+                xhr => {
+                    let err = createError(xhr)
+                    reject(err)
+                }
+            )
+        })
     }
 
     //  因为针对axios传参的三种方法 无论是get  post还是delete 
@@ -156,7 +200,7 @@ class Axios{
 
     delete(...args) {
         let options = this._preprocessArgs('delete',args)
-        if(!options) {
+        if (!options) {
             assert(typeof args[0] == 'string','args[0] must is string')
             assert(
                 typeof args[1] == 'object' && args[1] && args[1].constructor == Object,

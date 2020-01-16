@@ -1,4 +1,4 @@
-export function assert(exp,msg = "assert") {
+export function assert(exp,msg = "assert faild") {
     if (!exp) {
         throw new Error(msg)
     }
