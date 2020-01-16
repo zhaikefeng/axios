@@ -1,0 +1,31 @@
+{
+  "name": "axios",
+  "version": "1.0.0",
+  "description": "模仿大佬Mikey-9进行axios原理的封装\r git地址:\r https://github.com/Mikey-9/axios\r 掘金地址:\r https://juejin.im/post/5e16e5d76fb9a02fd742a92b?utm_source=gold_browser_extension#heading-0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack-dev-server --env.dev",
+    "build": "webpack --env.prod"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhaikefeng/axios.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zhaikefeng/axios/issues"
+  },
+  "homepage": "https://github.com/zhaikefeng/axios#readme",
+  "dependencies": {
+    "@babel/core": "^7.8.3",
+    "@babel/polyfill": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
+    "babel-loader": "^8.0.6",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.10.1"
+  }
+}
